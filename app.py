@@ -1,10 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel
 from typing import List, Dict, Any
 import json
 import os
 
-app = FastAPI()
+app = FastMCP("IntelliMail")
 
 class Company(BaseModel):
     id: int
@@ -22,39 +22,88 @@ def load_json_data(filename: str) -> List[Dict[str, Any]]:
     with open(filepath, "r") as file:
         return json.load(file)
 
-@app.get("/companies", response_model=List[Company], operation_id="get_all_companies")
-def get_companies():
+@app.tool()
+async def get_companies() -> List[Company]:
+    """
+    Get a list of all companies.
+
+    Use this tool when the user asks for a list of companies, or when you need to perform
+    a name match (e.g., "Find me contacts for Tesla" → fetch all companies, then match by name).
+
+    Returns:
+        A list of Company objects, each with `id` and `name`.
+    """
     companies = load_json_data("companies.json")
     return [Company(**company) for company in companies]
 
-@app.get("/companies/{company_id}", response_model=Company, operation_id="get_company_by_id")
-def get_company(company_id: int):
+@app.tool()
+def get_company(company_id: int) -> Company:
+    """
+    Get details of a specific company by its ID.
+
+    Use this tool when the user refers to a company by its numeric ID.
+    You can use it after getting company_id via name-matching with get_companies().
+
+    Args:
+        company_id: The ID of the company (integer).
+
+    Returns:
+        A Company object with `id` and `name`, or null if not found.
+    """
     companies = load_json_data("companies.json")
     company = next((c for c in companies if c["id"] == company_id), None)
     if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
+        return None
     return Company(**company)
 
-@app.get("/companies/{company_id}/contacts", response_model=List[Contact], operation_id="get_all_contacts_for_company_id")
-def get_contacts(company_id: int):
+@app.tool()
+def get_contacts_for_company(company_id: int):
+    """
+    Get all contacts for a specific company.
+
+    Use this tool when the user asks for:
+      - All contacts at a company
+      - The primary contact at a company
+      - Contact emails or names belonging to a company
+
+    First, ensure that the company exists using `get_companies()` or `get_company()`.
+
+    Args:
+        company_id: The ID of the company (integer).
+
+    Returns:
+        A list of Contact objects with `id`, `name`, `email`, `primary`, and `company_id`.
+    """
     companies = load_json_data("companies.json")
     company = next((c for c in companies if c["id"] == company_id), None)
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
-    
+
     contacts = load_json_data("contacts.json")
     company_contacts = [c for c in contacts if c["company_id"] == company_id]
     return [Contact(**contact) for contact in company_contacts]
 
-@app.get("/companies/{company_id}/contacts/{contact_id}", response_model=Contact, operation_id="get_contact_by_id_for_company_id")
-def get_contact(company_id: int, contact_id: int):
+@app.tool()
+def get_contact_for_company(company_id: int, contact_id: int):
+    """
+    Get a specific contact within a given company.
+
+    Use this tool when the user asks for a single contact by ID, within the context of a company.
+    This is helpful for confirming ownership of a contact within a company.
+
+    Args:
+        company_id: The ID of the company the contact belongs to.
+        contact_id: The ID of the contact to fetch.
+
+    Returns:
+        A Contact object if found, or null if either the company or contact is not found.
+    """
     companies = load_json_data("companies.json")
     company = next((c for c in companies if c["id"] == company_id), None)
     if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
-    
+        return None
     contacts = load_json_data("contacts.json")
     contact = next((c for c in contacts if c["id"] == contact_id and c["company_id"] == company_id), None)
     if not contact:
-        raise HTTPException(status_code=404, detail="Contact not found")
+        return None
     return Contact(**contact)
