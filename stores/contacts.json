@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "name": "Rakesh Pawar",
+    "email": "rakesh.pawar@sage.com",
+    "primary": true,
+    "company_id": 1
+  },
+  {
+    "id": 2,
+    "name": "Tejas Shetty",
+    "email": "tejas.shetty@sage.com",
+    "primary": false,
+    "company_id": 1
+  },
+  {
+    "id": 3,
+    "name": "Manish Narayan",
+    "email": "manish.bs@sage.com",
+    "primary": true,
+    "company_id": 2
+  },
+  {
+    "id": 4,
+    "name": "Arun Singh",
+    "email": "arun.singh@sage.com",
+    "primary": true,
+    "company_id": 3
+  },
+  {
+    "id": 5,
+    "name": "Srinivas Raman",
+    "email": "srinivas.raman@sage.com",
+    "primary": false,
+    "company_id": 3
+  },
+  {
+    "id": 6,
+    "name": "Avirup Patra",
+    "email": "avirup.patra@sage.com",
+    "primary": false,
+    "company_id": 4
+  }
+]
