@@ -1,16 +1,16 @@
 [
   {
     "id": 1,
-    "name": "Sarah Johnson",
-    "email": "sarah.johnson@technova.com",
+    "name": "Arun Singh",
+    "email": "arun.singh@sage.com",
     "primary": true,
     "company_id": 1
   },
   {
     "id": 2,
-    "name": "Michael Chen",
-    "email": "michael.chen@technova.com",
-    "primary": false,
+    "name": "Tejas Shetty",
+    "email": "tejas.shetty@sage.com",
+    "primary": true,
     "company_id": 1
   },
   {
