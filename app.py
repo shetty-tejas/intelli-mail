@@ -77,7 +77,7 @@ def get_contacts_for_company(company_id: int):
     companies = load_json_data("companies.json")
     company = next((c for c in companies if c["id"] == company_id), None)
     if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
+        return None
 
     contacts = load_json_data("contacts.json")
     company_contacts = [c for c in contacts if c["company_id"] == company_id]
