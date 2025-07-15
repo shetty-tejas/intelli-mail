@@ -1,8 +1,10 @@
 from fastmcp import FastMCP
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import json
 import os
+import requests
+from datetime import date
 
 app = FastMCP("IntelliMail")
 
@@ -17,12 +19,37 @@ class Contact(BaseModel):
     primary: bool
     company_id: int
 
+class Invoice(BaseModel):
+    id: int
+    status: str
+    einvoice_status: str
+    currency_code: str
+    total_amount: float
+    sales_tax_amount: float
+    invoice_date: str
+    due_date: str
+    payment_date: Optional[str] = None
+    company_id: int
+
+class Payment(BaseModel):
+    id: int
+    company_id: int
+
+class EmailContact(BaseModel):
+    email: str
+    name: str
+
+class EmailData(BaseModel):
+    to: List[EmailContact]
+    cc: Optional[List[EmailContact]] = []
+    bcc: Optional[List[EmailContact]] = []
+    subject: str
+    htmlContent: str
+
 def load_json_data(filename: str) -> List[Dict[str, Any]]:
     filepath = os.path.join("stores", filename)
     with open(filepath, "r") as file:
         return json.load(file)
-
-
 
 @app.tool()
 async def get_companies() -> List[Company]:
@@ -43,11 +70,10 @@ def get_company(company_id: int) -> Company:
     """
     Get details of a specific company by its ID.
 
-    Use this tool when the user refers to a company by its numeric ID.
-    You can use it after getting company_id via name-matching with get_companies().
+    Use this tool only if company_id is known (usually from get_companies).
 
     Args:
-        company_id: The ID of the company (integer).
+        company_id: The ID of the company.
 
     Returns:
         A Company object with `id` and `name`, or null if not found.
@@ -59,22 +85,31 @@ def get_company(company_id: int) -> Company:
     return Company(**company)
 
 @app.tool()
-def get_contacts_for_company(company_id: int):
+def get_contacts() -> List[Contact]:
+    """
+    Get all contacts across all companies.
+
+    Use this when filtering, grouping, or searching for contacts.
+    Always prefer this for generic or multi-company queries.
+
+    Returns:
+        A list of Contact objects.
+    """
+    contacts = load_json_data("contacts.json")
+    return [Contact(**contact) for contact in contacts]
+
+@app.tool()
+def get_contacts_for_company(company_id: int) -> List[Contact]:
     """
     Get all contacts for a specific company.
 
-    Use this tool when the user asks for:
-      - All contacts at a company
-      - The primary contact at a company
-      - Contact emails or names belonging to a company
-
-    First, ensure that the company exists using `get_companies()` or `get_company()`.
+    Only use this when the company_id is verified or resolved via name matching.
 
     Args:
-        company_id: The ID of the company (integer).
+        company_id: ID of the company.
 
     Returns:
-        A list of Contact objects with `id`, `name`, `email`, `primary`, and `company_id`.
+        A list of Contact objects for that company.
     """
     companies = load_json_data("companies.json")
     company = next((c for c in companies if c["id"] == company_id), None)
@@ -86,19 +121,16 @@ def get_contacts_for_company(company_id: int):
     return [Contact(**contact) for contact in company_contacts]
 
 @app.tool()
-def get_contact_for_company(company_id: int, contact_id: int):
+def get_contact_for_company(company_id: int, contact_id: int) -> Contact:
     """
-    Get a specific contact within a given company.
-
-    Use this tool when the user asks for a single contact by ID, within the context of a company.
-    This is helpful for confirming ownership of a contact within a company.
+    Get a specific contact from a company.
 
     Args:
-        company_id: The ID of the company the contact belongs to.
-        contact_id: The ID of the contact to fetch.
+        company_id: ID of the company.
+        contact_id: ID of the contact.
 
     Returns:
-        A Contact object if found, or null if either the company or contact is not found.
+        A Contact object if found; otherwise, null.
     """
     companies = load_json_data("companies.json")
     company = next((c for c in companies if c["id"] == company_id), None)
@@ -109,3 +141,38 @@ def get_contact_for_company(company_id: int, contact_id: int):
     if not contact:
         return None
     return Contact(**contact)
+
+@app.tool()
+def get_invoices() -> List[Invoice]:
+    """
+    Get all invoices across all companies.
+
+    Use this tool when filtering by status, amount, date, or for general summaries.
+
+    Returns:
+        A list of Invoice objects.
+    """
+    invoices = load_json_data("invoices.json")
+    return [Invoice(**invoice) for invoice in invoices]
+
+@app.tool()
+def get_invoices_by_company_id(company_id: int) -> List[Invoice]:
+    """
+    Get all invoices for a specific company.
+
+    Only use this when company_id is known.
+
+    Args:
+        company_id: ID of the company.
+
+    Returns:
+        A list of Invoice objects for the specified company.
+    """
+    companies = load_json_data("companies.json")
+    company = next((c for c in companies if c["id"] == company_id), None)
+    if not company:
+        return []
+
+    invoices = load_json_data("invoices.json")
+    company_invoices = [i for i in invoices if i["company_id"] == company_id]
+    return [Invoice(**invoice) for invoice in company_invoices]

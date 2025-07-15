@@ -1,18 +1,46 @@
 [
   {
     "id": 1,
-    "name": "Acme Corporation"
+    "name": "TechNova Solutions Inc."
   },
   {
     "id": 2,
-    "name": "Big Theta Corp"
+    "name": "Global Manufacturing Partners LLC"
   },
   {
     "id": 3,
-    "name": "CeeCee Enterprises"
+    "name": "Sterling Financial Services"
   },
   {
     "id": 4,
-    "name": "Delta Limited"
+    "name": "Meridian Healthcare Systems"
+  },
+  {
+    "id": 5,
+    "name": "Quantum Dynamics Corp"
+  },
+  {
+    "id": 6,
+    "name": "Evergreen Logistics Ltd."
+  },
+  {
+    "id": 7,
+    "name": "Apex Digital Marketing"
+  },
+  {
+    "id": 8,
+    "name": "CloudFirst Technologies"
+  },
+  {
+    "id": 9,
+    "name": "Pinnacle Construction Group"
+  },
+  {
+    "id": 10,
+    "name": "Horizon Energy Solutions"
+  },
+  {
+    "id": 11,
+    "name": "Silverline Consulting"
   }
 ]
