@@ -6,3 +6,4 @@ infra/node_modules
 infra/.venv
 __pycache__
 *.pyc
+venv
