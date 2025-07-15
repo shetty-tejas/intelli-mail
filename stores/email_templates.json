@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "invoice_overdue_reminder",
+    "subject":"Invoice Overdue Reminder - [INVOICE_CODE]",
+    "content": "Hi,<br/>This is to an reminder for payment of an Invoice [INVOICE_CODE].</br>. Please ignore n case already paid.<br/>Thanks<br/>"
+  },
+  {
+    "id": 2,
+    "name": "invoice_overdue_reminder_second",
+    "subject":"Invoice Overdue 2nd Reminder - [INVOICE_CODE]",
+    "content": "Hi,<br/>This is to an second reminder for payment of an Invoice [INVOICE_CODE].</br>. Please ignore n case already paid.<br/>Thanks<br/>"
+  },
+  {
+    "id": 3,
+    "name": "payment_reminder",
+    "subject":"Reminder - [INVOICE_CODE]",
+    "content": "Hi,<br/>This is to an reminder for payment of an Invoice [INVOICE_CODE].</br>. Please ignore n case already paid.<br/>Thanks<br/>"
+  },
+  {
+    "id": 4,
+    "name": "payment_confirmation",
+    "subject":"Payment Confirmation",
+    "content": "Hi,<br/>Thankyou for an payment of Invoice.<br/>Thanks<br/>"
+  }
+]

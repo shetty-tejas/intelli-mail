@@ -46,6 +46,12 @@ class EmailData(BaseModel):
     subject: str
     htmlContent: str
 
+class Template(BaseModel):
+    id: int
+    name: str
+    subject: str
+    content: str
+
 def load_json_data(filename: str) -> List[Dict[str, Any]]:
     filepath = os.path.join("stores", filename)
     with open(filepath, "r") as file:
@@ -54,7 +60,7 @@ def load_json_data(filename: str) -> List[Dict[str, Any]]:
 @app.tool()
 async def get_companies() -> List[Company]:
     """
-    Get a list of all companies.
+    Get a list of all companies in english.
 
     Use this tool when the user asks for a list of companies, or when you need to perform
     a name match (e.g., "Find me contacts for Tesla" → fetch all companies, then match by name).
@@ -176,3 +182,79 @@ def get_invoices_by_company_id(company_id: int) -> List[Invoice]:
     invoices = load_json_data("invoices.json")
     company_invoices = [i for i in invoices if i["company_id"] == company_id]
     return [Invoice(**invoice) for invoice in company_invoices]
+
+@app.tool()
+def get_invoice_by_id(invoice_id: int) -> Invoice:
+    invoices = load_json_data("invoices.json")
+    invoice = next((i for i in invoices if c["id"] == invoice_id), None)
+    if not invoice:
+        return None
+
+    return Invoice(**invoice)
+
+@app.tool()
+def get_email_template(template_name: str) -> Template:
+    """
+    Fetch email template based on name
+    
+    Args:
+        template_name: template name of an email template
+        
+    Returns:
+        Template Object if template found, False otherwise
+    """
+    email_templates = load_json_data("email_templates.json")
+    email_template = next((c for c in email_templates if c["name"] == template_name), None)
+    if not email_template:
+        return None
+
+    return Template(**email_template)
+
+@app.tool()
+def send_email(to: List[EmailContact], template: Template, html_content: str, 
+               cc: Optional[List[EmailContact]] = None, bcc: Optional[List[EmailContact]] = None) -> bool:
+    """
+    Send an email using the specified parameters.
+    
+    Args:
+        to: List of recipients
+        template: Email template
+        cc: Optional list of CC recipients
+        bcc: Optional list of BCC recipients
+        
+    Returns:
+        True if email sent successfully, False otherwise
+    """
+    try:
+        email_data = {
+            "data": {
+                "type": "Email",
+                "attributes": {
+                    "from": {
+                        "email": "email-service-test@2n334c.onmicrosoft.com",
+                        "name": "email-service-test"
+                    },
+                    "to": [{"email": contact.email, "name": contact.name} for contact in to],
+                    "cc": [{"email": contact.email, "name": contact.name} for contact in (cc or [])],
+                    "bcc": [{"email": contact.email, "name": contact.name} for contact in (bcc or [])],
+                    "subject": template.subject,
+                    "htmlContent": template.content,
+                    "attachments": []
+                }
+            }
+        }
+        
+
+        headers = {
+            "Authorization": "Bearer " + os.getenv('NES_API_TOKEN'),
+            "Connection-Id": "00152b82-ebaf-4036-8894-9a581967730e",
+            "traceparent": "00-7c8780d3940f412cb7f517a33d2213d9-aab3ab3c9789551c-01",
+            "Idempotency-Key": "test"
+        }
+        
+        response = requests.post(os.getenv('NES_API_DOMAIN') + "/datasets/e8f2c703-8b97-7cca-185f-f7ecc2f68a4f/emails", json=email_data, headers=headers)
+        return response.status_code == 200        
+        
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return False
