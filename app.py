@@ -1,4 +1,4 @@
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 from pydantic import BaseModel
 from typing import List, Dict, Any
 import json
@@ -21,6 +21,8 @@ def load_json_data(filename: str) -> List[Dict[str, Any]]:
     filepath = os.path.join("stores", filename)
     with open(filepath, "r") as file:
         return json.load(file)
+
+
 
 @app.tool()
 async def get_companies() -> List[Company]:
