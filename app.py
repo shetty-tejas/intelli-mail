@@ -247,7 +247,7 @@ def send_email(to: List[EmailContact], template: Template, html_content: str,
 
         headers = {
             "Authorization": "Bearer " + os.getenv('NES_API_TOKEN'),
-            "Connection-Id": "00152b82-ebaf-4036-8894-9a581967730e",
+            "Connection-Id": os.getenv('NES_CONNECTION_ID'),
             "traceparent": "00-7c8780d3940f412cb7f517a33d2213d9-aab3ab3c9789551c-01",
             "Idempotency-Key": "test"
         }
